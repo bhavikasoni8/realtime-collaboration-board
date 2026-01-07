@@ -1,11 +1,16 @@
-import express from "express";
+import dotenv from "dotenv";
+dotenv.config();
 
-const app = express();
+import http from "http";
+import app from "./app";
+import { connectDB } from "./config/db";
 
-app.get("/health", (_, res) => {
-  res.send("Server is running");
-});
+const PORT = process.env.PORT || 8081;
 
-app.listen(5000, () => {
-  console.log("Server running on 5000");
+const server = http.createServer(app);
+
+connectDB();
+
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
