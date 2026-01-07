@@ -1,0 +1,24 @@
+{
+  "name": "realtime-collaboration-board",
+  "version": "1.0.0",
+  "description": "A scalable real-time collaboration platform built using Next.js (frontend) and Node.js + Socket.io (backend) with Redis Pub/Sub for multi-instance synchronization and MongoDB for persistent storage. Implements room-based collaboration, JWT authentication, live cursors, shared canvas state, and conflict-free updates.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bhavikasoni8/realtime-collaboration-board.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/bhavikasoni8/realtime-collaboration-board/issues"
+  },
+  "homepage": "https://github.com/bhavikasoni8/realtime-collaboration-board#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
