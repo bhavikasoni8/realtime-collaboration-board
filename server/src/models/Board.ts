@@ -1,29 +1,29 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface IBoardElement {
+export interface IOperation {
   id: string;
-  type: "note" | "task" | "shape";
-  x: number;
-  y: number;
-  text?: string;
-  completed?: boolean;
-  shapeType?: "rect" | "circle";
+  type: "ADD" | "MOVE" | "DELETE" | "UPDATE";
+  payload: any;
+  userId: string;
+  timestamp: number;
 }
 
 export interface IBoard extends Document {
   roomId: mongoose.Types.ObjectId;
-  elements: IBoardElement[];
+  operations: IOperation[];
 }
 
-const BoardElementSchema = new Schema<IBoardElement>(
+const OperationSchema = new Schema<IOperation>(
   {
     id: { type: String, required: true },
-    type: { type: String, enum: ["note", "task", "shape"], required: true },
-    x: { type: Number, required: true },
-    y: { type: Number, required: true },
-    text: { type: String },
-    completed: { type: Boolean },
-    shapeType: { type: String, enum: ["rect", "circle"] },
+    type: {
+      type: String,
+      enum: ["ADD", "MOVE", "DELETE", "UPDATE"],
+      required: true,
+    },
+    payload: { type: Schema.Types.Mixed, required: true },
+    userId: { type: String, required: true },
+    timestamp: { type: Number, required: true },
   },
   { _id: false }
 );
@@ -31,7 +31,7 @@ const BoardElementSchema = new Schema<IBoardElement>(
 const BoardSchema = new Schema<IBoard>(
   {
     roomId: { type: Schema.Types.ObjectId, ref: "Room", required: true },
-    elements: { type: [BoardElementSchema], default: [] },
+    operations: { type: [OperationSchema], default: [] },
   },
   { timestamps: true }
 );
