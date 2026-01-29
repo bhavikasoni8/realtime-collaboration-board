@@ -10,6 +10,7 @@ type Props = {
 
 export default function BoardCanvas({ roomId }: Props) {
   const { elements, applyOp } = useBoardStore();
+  console.log("elements: ", elements);
 
   return (
     <Stage width={window.innerWidth} height={window.innerHeight - 80}>
