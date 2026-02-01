@@ -1,90 +1,88 @@
 import { create } from "zustand";
-
-export type BoardElement = {
-  id: string;
-  type: "note" | "task" | "shape";
-  x: number;
-  y: number;
-  text?: string;
-};
-
-export type Operation = {
-  id: string;
-  type: "ADD" | "MOVE" | "DELETE";
-  payload: any;
-};
+import { BoardElement, BoardOperation } from "@/types/board";
+import { PresenceMap } from "@/types/presence";
 
 type BoardState = {
   elements: BoardElement[];
-  history: Operation[];
-  future: Operation[];
-
-  applyOp: (op: Operation) => void;
+  history: BoardOperation[];
+  redoStack: BoardOperation[];
+  applyOp: (op: BoardOperation) => void;
   undo: () => void;
   redo: () => void;
-  syncFromServer: (ops: Operation[]) => void;
+  syncFromServer: (ops: BoardOperation[]) => void;
+  presence: PresenceMap;
+  setPresence: (presence: PresenceMap) => void;
 };
 
 export const useBoardStore = create<BoardState>((set, get) => ({
   elements: [],
   history: [],
-  future: [],
-
-  syncFromServer: (ops) => {
-    let elements: BoardElement[] = [];
-    ops.forEach((op) => {
-      if (op.type === "ADD") elements.push(op.payload);
-      if (op.type === "MOVE") {
-        elements = elements.map((e) =>
-          e.id === op.payload.id ? { ...e, ...op.payload } : e
-        );
-      }
-      if (op.type === "DELETE") {
-        elements = elements.filter((e) => e.id !== op.payload.id);
-      }
-    });
-
-    set({ elements, history: ops, future: [] });
-  },
-
+  redoStack: [],
+  presence: {},
+  setPresence: (presence) => set({ presence }),
   applyOp: (op) => {
     const { elements, history } = get();
-    let newEls = [...elements];
+    let newElements = [...elements];
 
-    if (op.type === "ADD") newEls.push(op.payload);
+    if (op.type === "ADD") {
+      newElements.push(op.payload);
+    }
+
     if (op.type === "MOVE") {
-      newEls = newEls.map((e) =>
-        e.id === op.payload.id ? { ...e, ...op.payload } : e
+      newElements = newElements.map((el) =>
+        el.id === op.payload.id
+          ? { ...el, x: op.payload.x, y: op.payload.y }
+          : el
       );
     }
-    if (op.type === "DELETE") {
-      newEls = newEls.filter((e) => e.id !== op.payload.id);
-    }
 
-    set({ elements: newEls, history: [...history, op], future: [] });
+    set({
+      elements: newElements,
+      history: [...history, op],
+      redoStack: [],
+    });
   },
 
   undo: () => {
-    const { history, future } = get();
+    const { history } = get();
     if (!history.length) return;
 
     const newHistory = [...history];
-    const last = newHistory.pop()!;
-    set({ history: newHistory, future: [last, ...future] });
+    newHistory.pop();
 
-    get().syncFromServer(newHistory);
-  },
+    const rebuilt: BoardElement[] = [];
 
-  redo: () => {
-    const { history, future } = get();
-    if (!future.length) return;
+    newHistory.forEach((op) => {
+      if (op.type === "ADD") {
+        rebuilt.push(op.payload);
+      }
 
-    const next = future[0];
-    set({
-      history: [...history, next],
-      future: future.slice(1),
+      if (op.type === "MOVE") {
+        const index = rebuilt.findIndex((e) => e.id === op.payload.id);
+
+        if (index !== -1) {
+          rebuilt[index] = {
+            ...rebuilt[index],
+            x: op.payload.x,
+            y: op.payload.y,
+          };
+        }
+      }
     });
 
-    get().applyOp(next);
+    set({
+      elements: rebuilt,
+      history: newHistory,
+    });
+  },
+
+  redo: () => {},
+
+  syncFromServer: (ops) => {
+    set({ elements: [], history: [] });
+
+    ops.forEach((op) => {
+      get().applyOp(op);
+    });
   },
 }));

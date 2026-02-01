@@ -22,7 +22,7 @@ export const createRoom = async (req: AuthRequest, res: Response) => {
 
     // 2. Create board linked to room
     const board = await Board.create({
-      roomId: room._id,
+      roomId: room._id.toString(),
       operations: [],
     });
 

@@ -9,7 +9,7 @@ export interface IOperation {
 }
 
 export interface IBoard extends Document {
-  roomId: mongoose.Types.ObjectId;
+  roomId: string;
   operations: IOperation[];
 }
 
@@ -30,7 +30,7 @@ const OperationSchema = new Schema<IOperation>(
 
 const BoardSchema = new Schema<IBoard>(
   {
-    roomId: { type: Schema.Types.ObjectId, ref: "Room", required: true },
+    roomId: { type: String, required: true },
     operations: { type: [OperationSchema], default: [] },
   },
   { timestamps: true }

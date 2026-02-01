@@ -3,17 +3,13 @@
 import { Stage, Layer, Rect, Text, Group } from "react-konva";
 import { useBoardStore } from "@/store/boardStore";
 import { socket } from "@/socket";
+import { BoardOperation } from "@/types/board";
 
-type Props = {
-  roomId: string;
-};
-
-export default function BoardCanvas({ roomId }: Props) {
+export default function BoardCanvas({ roomId }: { roomId: string }) {
   const { elements, applyOp } = useBoardStore();
-  console.log("elements: ", elements);
 
   return (
-    <Stage width={window.innerWidth} height={window.innerHeight - 80}>
+    <Stage width={window.innerWidth} height={600}>
       <Layer>
         {elements.map((el) => (
           <Group
@@ -22,9 +18,9 @@ export default function BoardCanvas({ roomId }: Props) {
             y={el.y}
             draggable
             onDragEnd={(e) => {
-              const op = {
+              const op: BoardOperation = {
                 id: crypto.randomUUID(),
-                type: "MOVE" as const,
+                type: "MOVE",
                 payload: {
                   id: el.id,
                   x: e.target.x(),
